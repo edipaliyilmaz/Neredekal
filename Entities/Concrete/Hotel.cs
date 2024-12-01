@@ -12,6 +12,8 @@ namespace Entities.Concrete
         public string ManagerLastName { get; set; } 
         public string CompanyName { get; set; }
         public ICollection<Contact> Contacts { get; set; }
+        public DateTime CreateDate { get; set; } = DateTime.Now;
+
     }
 
 }

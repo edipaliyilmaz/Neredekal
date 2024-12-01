@@ -11,6 +11,7 @@ namespace Entities.Concrete
         public ContactType Type { get; set; } 
         public string Value { get; set; } 
         public Hotel Hotel { get; set; }
+        public DateTime CreateDate { get; set; } = DateTime.Now;
     }
 
 

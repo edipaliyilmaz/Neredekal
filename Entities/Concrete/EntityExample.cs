@@ -1,4 +1,5 @@
 ﻿using Core.Entities;
+using System;
 
 namespace Entities.Concrete
 {
@@ -6,5 +7,6 @@ namespace Entities.Concrete
     {
         public int Id { get; set; }
         public string Name { get; set; }
+
     }
 }
