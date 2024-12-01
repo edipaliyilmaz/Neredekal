@@ -16,9 +16,11 @@ using Business.Handlers.Hotels.ValidationRules;
 using Entities.Dtos;
 using System.Collections.Generic;
 using System;
+using Business.Helpers;
 
 namespace Business.Handlers.Hotels.Commands
 {
+
     /// <summary>
     /// 
     /// </summary>
@@ -53,7 +55,7 @@ namespace Business.Handlers.Hotels.Commands
 
                 var newHotel = new Hotel
                 {
-                    Id = Guid.NewGuid(),
+                    Id = SequentialGuidGenerator.NewSequentialGuid(),  
                     ManagerFirstName = request.ManagerFirstName,
                     ManagerLastName = request.ManagerLastName,
                     CompanyName = request.CompanyName
@@ -63,7 +65,7 @@ namespace Business.Handlers.Hotels.Commands
                 {
                     newHotel.Contacts = request.Contacts.Select(c => new Contact
                     {
-                        Id = Guid.NewGuid(),
+                        Id = SequentialGuidGenerator.NewSequentialGuid(),
                         HotelId = newHotel.Id,  
                         Type = c.Type,
                         Value = c.Value
