@@ -1,29 +1,45 @@
-# DevArchitecture
 
-DevArchitecture Open Source Rapid Application Framework for .Net 7
+docker-compose.yml
 
-For full documentation support [DevArchitecture](https://www.devarchitecture.net)
+version: '3.8'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
+    expose:
+      - 9200
+    environment:
+      - xpack.security.enabled=false
+      - "discovery.type=single-node"
+      - ELASTIC_USERNAME=elastic
+      - ELASTIC_PASSWORD=changeme
+    networks:
+      - es-net
+    ports:
+      - 9200:9200
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.7.1
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    expose:
+      - 5601
+    networks:
+      - es-net
+    depends_on:
+      - elasticsearch
+    ports:
+      - 5601:5601
+    volumes:
+      - kibana-data:/usr/share/kibana/data
+networks:
+  es-net:
+    driver: bridge
+volumes:
+  elasticsearch-data:
+    driver: local
+  kibana-data:
+    driver: local
 
-[DevArchitecture Visual Studio Extensions](https://marketplace.visualstudio.com/search?term=devarchitecture&target=VS&category=All%20categories&vsVersion=&sortBy=Relevance)
 
-![](https://www.devarchitecture.net/assets/images/image1-ce8537e256c57d119ad5559b6217d4c9.png)
 
-# Support the DevArchitecture 
-
-If you liked DevArchitecture Open Source Rapid Application Framework for .Net 7? 
-
-## Please give a star to this repository ⭐
-
-# Build Project with Any Terminal
-
-``> dotnet build``
-
-``
-Build succeeded.
-0 Warning(s)
-0 Error(s)
-``
-
-# Run Api Project with Any Terminal
-
-``> dotnet run -p WebAPI``
