@@ -8,8 +8,9 @@ namespace Core.Entities.Concrete
     {
         public User()
         {
-            if(UserId==0){
-              RecordDate = DateTime.Now;
+            if (UserId == 0)
+            {
+                RecordDate = DateTime.Now;
             }
             UpdateContactDate = DateTime.Now;
             Status = true;
@@ -38,7 +39,6 @@ namespace Core.Entities.Concrete
 
         public byte[] PasswordSalt { get; set; }
         public byte[] PasswordHash { get; set; }
-
         public bool UpdateMobilePhone(string mobilePhone)
         {
             if (mobilePhone == MobilePhones)

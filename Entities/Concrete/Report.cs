@@ -13,7 +13,9 @@ namespace Entities.Concrete
         public DateTime CreatedDate { get; set; }
         public string Location { get; set; }
         public int HotelCount { get; set; } 
-        public int PhoneCount { get; set; } 
+        public int PhoneCount { get; set; }
+        public DateTime CreateDate { get; set; } = DateTime.Now;
+
     }
 
 
