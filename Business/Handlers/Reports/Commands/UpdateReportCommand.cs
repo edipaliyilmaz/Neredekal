@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using Core.Aspects.Autofac.Validation;
 using Business.Handlers.Reports.ValidationRules;
+using Core.Enums;
+using System;
 
 
 namespace Business.Handlers.Reports.Commands
@@ -21,12 +23,8 @@ namespace Business.Handlers.Reports.Commands
 
     public class UpdateReportCommand : IRequest<IResult>
     {
-        public System.Guid Id { get; set; }
-        public Core.Enums.ReportStatus Status { get; set; }
-        public System.DateTime CreatedDate { get; set; }
-        public string Location { get; set; }
-        public int HotelCount { get; set; }
-        public int PhoneCount { get; set; }
+        public Guid Id { get; set; }
+        public ReportStatus Status { get; set; }
 
         public class UpdateReportCommandHandler : IRequestHandler<UpdateReportCommand, IResult>
         {
@@ -41,14 +39,15 @@ namespace Business.Handlers.Reports.Commands
 
             [ValidationAspect(typeof(UpdateReportValidator), Priority = 1)]
             [CacheRemoveAspect("Get")]
-            [LogAspect(typeof(FileLogger))]
-            [SecuredOperation(Priority = 1)]
+            [LogAspect(typeof(LogstashLogger))]
             public async Task<IResult> Handle(UpdateReportCommand request, CancellationToken cancellationToken)
             {
                 var isThereReportRecord = await _reportRepository.GetAsync(u => u.Id == request.Id);
-
+                if (isThereReportRecord == null)
+                {
+                    return new ErrorResult("NotFound");
+                }
                 isThereReportRecord.Status = request.Status;
-
 
                 _reportRepository.Update(isThereReportRecord);
                 await _reportRepository.SaveChangesAsync();

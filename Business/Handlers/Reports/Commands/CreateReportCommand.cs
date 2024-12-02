@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using Business.Handlers.Reports.ValidationRules;
 using Business.Helpers;
+using Core.Enums;
+using System;
 
 namespace Business.Handlers.Reports.Commands
 {
@@ -22,11 +24,9 @@ namespace Business.Handlers.Reports.Commands
     /// </summary>
     public class CreateReportCommand : IRequest<IResult>
     {
-
-        public Core.Enums.ReportStatus Status { get; set; }
-        public System.DateTime CreatedDate { get; set; }
-
-
+        public ReportStatus Status { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public Guid Id { get; set; }
 
         public class CreateReportCommandHandler : IRequestHandler<CreateReportCommand, IResult>
         {
@@ -46,8 +46,9 @@ namespace Business.Handlers.Reports.Commands
 
                 var addedReport = new Report
                 {
-                    Id = SequentialGuidGenerator.NewSequentialGuid(),  
+                    Id = request.Id,
                     Status = request.Status,
+                    CreateDate = request.CreatedDate,
                 };
 
                 _reportRepository.Add(addedReport);

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Entities.Dtos
 {
-    public class ReportDto
+    public class ReportItem
     {
         public string Location { get; set; }
         public int HotelCount { get; set; }

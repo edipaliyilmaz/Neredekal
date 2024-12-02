@@ -8,13 +8,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Core.Aspects.Autofac.Logging;
 using Core.CrossCuttingConcerns.Logging.Serilog.Loggers;
+using System;
 
 
 namespace Business.Handlers.Reports.Queries
 {
     public class GetReportQuery : IRequest<IDataResult<Report>>
     {
-        public System.Guid Id { get; set; }
+        public Guid Id { get; set; }
 
         public class GetReportQueryHandler : IRequestHandler<GetReportQuery, IDataResult<Report>>
         {

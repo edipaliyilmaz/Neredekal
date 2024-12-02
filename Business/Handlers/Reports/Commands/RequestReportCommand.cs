@@ -19,6 +19,7 @@ using ServiceStack;
 using System;
 using Entities.Dtos;
 using Core.Enums;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Business.Handlers.Reports.Commands
 {
@@ -27,7 +28,6 @@ namespace Business.Handlers.Reports.Commands
     /// </summary>
     public class RequestReportCommand : IRequest<IResult>
     {
-
         public class RequestReportCommandHandler : IRequestHandler<RequestReportCommand, IResult>
         {
             private readonly IReportRepository _reportRepository;
@@ -49,15 +49,22 @@ namespace Business.Handlers.Reports.Commands
             {
                 var reportId = SequentialGuidGenerator.NewSequentialGuid();
 
-
                 var reportRequest = new Report
                 {
                     Id = reportId,
                     Status = ReportStatus.Preparing,
+                    CreateDate = DateTime.Now,
                 };
                 var result = await _messageBrokerHelper.QueueMessageAsync(reportRequest);
                 if (result.Success)
                 {
+                    var command = new CreateReportCommand
+                    {
+                        CreatedDate = reportRequest.CreateDate,
+                        Id = reportRequest.Id,
+                        Status = reportRequest.Status
+                    };
+                    await _mediator.Send(command);
                     Console.WriteLine("Message queued successfully.");
                 }
                 else

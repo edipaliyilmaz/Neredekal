@@ -18,7 +18,8 @@ namespace Business.Handlers.Reports.ValidationRules
         public UpdateReportValidator()
         {
             RuleFor(x => x.Status).NotEmpty();
-            RuleFor(x => x.CreatedDate).NotEmpty();
+            RuleFor(x => x.Id).NotEmpty();
+
         }
     }
 }
