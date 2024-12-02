@@ -21,10 +21,9 @@ namespace Core.Utilities.MessageBrokers.RabbitMq
 
         public IConfiguration Configuration { get; }
 
-        public Task<IResult> QueueMessageAsync<T>(T messageModel)
+        public Task<IResult> QueueMessageAsync<T>(T messageModel,string queueName)
         {
             var channel = _rabbitMQService.CreateChannel();
-            var queueName = "Report"; 
 
             _rabbitMQService.DeclareQueue(channel, queueName);
 

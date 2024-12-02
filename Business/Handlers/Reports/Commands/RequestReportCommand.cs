@@ -53,10 +53,10 @@ namespace Business.Handlers.Reports.Commands
                 {
                     Id = reportId,
                     Status = ReportStatus.Preparing,
-                    CreateDate = DateTime.UtcNow, 
+                    CreateDate = DateTime.UtcNow,
                 };
 
-                var messageQueueResult = await _messageBrokerHelper.QueueMessageAsync(reportRequest);
+                var messageQueueResult = await _messageBrokerHelper.QueueMessageAsync(reportRequest, "Report");
                 if (messageQueueResult.Success)
                 {
                     var createReportCommand = new CreateReportCommand

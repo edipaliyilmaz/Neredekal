@@ -22,7 +22,7 @@ public class KafkaMessageBroker : IMessageBrokerHelper
                 .GetSection("MessageBrokerOptions").Get<MessageBrokerOptions>();
     }
 
-    public async Task<IResult> QueueMessageAsync<T>(T messageModel)
+    public async Task<IResult> QueueMessageAsync<T>(T messageModel, string queueName)
     {
         var producerConfig = new ProducerConfig
         {

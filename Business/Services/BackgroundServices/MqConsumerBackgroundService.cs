@@ -16,6 +16,9 @@ using Core.CrossCuttingConcerns.Logging.Serilog.Loggers;
 using Core.Aspects.Autofac.Logging;
 using DataAccess.Abstract;
 using Entities.Concrete;
+using Entities.Dtos;
+using Business.Handlers.Hotels.Queries;
+using System.Linq;
 
 namespace Business.Services.BackgroundServices
 {
@@ -49,7 +52,7 @@ namespace Business.Services.BackgroundServices
         {
             try
             {
-                var channel = _rabbitMQService.CreateChannel(); 
+                var channel = _rabbitMQService.CreateChannel();
                 var queueName = "Report";
 
                 _rabbitMQService.DeclareQueue(channel, queueName);
@@ -69,17 +72,22 @@ namespace Business.Services.BackgroundServices
                         var report = JsonSerializer.Deserialize<Report>(message);
                         if (report != null)
                         {
-                            var command = new UpdateReportCommand
+                            var reports = await _mediator.Send(new GetHotelsWithContactQuery());
+                            if (reports.Data != null)
                             {
-                                Status = ReportStatus.Completed,
-                                Id = report.Id
-                            };
 
-                            var result = await _mediator.Send(command);
-                            Console.WriteLine($"Report processed: {result}");
+                                var command = new UpdateReportCommand
+                                {
+                                    Status = ReportStatus.Completed,
+                                    Id = report.Id
+                                };
+
+                                var result = await _mediator.Send(command);
+                                var messageQueueResult = await _messageBrokerHelper.QueueMessageAsync(reports.Data,"ReportResult");
+                                Console.WriteLine($"Report processed: {result}");
+                                channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                            }
                         }
-
-                        channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false); // Mesajı başarıyla aldık
                     }
                     catch (Exception ex)
                     {
@@ -91,7 +99,7 @@ namespace Business.Services.BackgroundServices
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    Thread.Sleep(1000); 
+                    Thread.Sleep(1000);
                 }
             }
             catch (Exception ex)

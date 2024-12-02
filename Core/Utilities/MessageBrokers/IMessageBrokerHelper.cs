@@ -5,5 +5,5 @@ namespace Core.Utilities.MessageBrokers;
 
 public interface IMessageBrokerHelper
 {
-    Task<IResult> QueueMessageAsync<T>(T messageModel);
+    Task<IResult> QueueMessageAsync<T>(T messageModel, string queueName);
 }
