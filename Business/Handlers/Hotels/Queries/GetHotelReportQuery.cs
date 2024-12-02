@@ -15,18 +15,19 @@ using Microsoft.EntityFrameworkCore;
 using Entities.Dtos;
 using System.Linq;
 using Core.Enums;
+using System;
 
 namespace Business.Handlers.Hotels.Queries
 {
 
-    public class GetHotelsWithContactQuery : IRequest<IDataResult<IEnumerable<ReportItem>>>
+    public class GetHotelReportQuery : IRequest<IDataResult<IEnumerable<ReportItem>>>
     {
-        public class GetHotelsWithContactQueryHandler : IRequestHandler<GetHotelsWithContactQuery, IDataResult<IEnumerable<ReportItem>>>
+        public class GetHotelReportQueryHandler : IRequestHandler<GetHotelReportQuery, IDataResult<IEnumerable<ReportItem>>>
         {
             private readonly IHotelRepository _hotelRepository;
             private readonly IMediator _mediator;
 
-            public GetHotelsWithContactQueryHandler(IHotelRepository hotelRepository, IMediator mediator)
+            public GetHotelReportQueryHandler(IHotelRepository hotelRepository, IMediator mediator)
             {
                 _hotelRepository = hotelRepository;
                 _mediator = mediator;
@@ -35,7 +36,7 @@ namespace Business.Handlers.Hotels.Queries
             [PerformanceAspect(5)]
             [CacheAspect(10)]
             [LogAspect(typeof(LogstashLogger))]
-            public async Task<IDataResult<IEnumerable<ReportItem>>> Handle(GetHotelsWithContactQuery request, CancellationToken cancellationToken)
+            public async Task<IDataResult<IEnumerable<ReportItem>>> Handle(GetHotelReportQuery request, CancellationToken cancellationToken)
             {
                 var hotels = await _hotelRepository.GetHotelWithContactAsync().ToListAsync(cancellationToken);
 
@@ -50,6 +51,7 @@ namespace Business.Handlers.Hotels.Queries
                     .GroupBy(x => x.Location)
                     .Select(group => new ReportItem
                     {
+                        CreatedDate = DateTime.Now,
                         Location = group.Key,
                         HotelCount = group.Count(),
                         PhoneCount = group.SelectMany(x => x.Hotel.Contacts)

@@ -58,7 +58,6 @@ namespace Business.Services.BackgroundServices
                 _rabbitMQService.DeclareQueue(channel, queueName);
 
                 var consumer = new EventingBasicConsumer(channel);
-                Console.WriteLine("Message received: consumer");
 
                 consumer.Received += async (model, ea) =>
                 {
@@ -67,12 +66,11 @@ namespace Business.Services.BackgroundServices
                         var body = ea.Body.ToArray();
                         var message = Encoding.UTF8.GetString(body);
 
-                        Console.WriteLine($"Message received: {message}");
 
                         var report = JsonSerializer.Deserialize<Report>(message);
                         if (report != null)
                         {
-                            var reports = await _mediator.Send(new GetHotelsWithContactQuery());
+                            var reports = await _mediator.Send(new GetHotelReportQuery());
                             if (reports.Data != null)
                             {
 
@@ -84,14 +82,13 @@ namespace Business.Services.BackgroundServices
 
                                 var result = await _mediator.Send(command);
                                 var messageQueueResult = await _messageBrokerHelper.QueueMessageAsync(reports.Data,"ReportResult");
-                                Console.WriteLine($"Report processed: {result}");
                                 channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error: {ex.Message}");
+                        throw ex;
                     }
                 };
 
@@ -104,7 +101,7 @@ namespace Business.Services.BackgroundServices
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error while consuming: {ex.Message}");
+                throw ex;
             }
         }
     }

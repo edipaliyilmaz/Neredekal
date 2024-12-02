@@ -1,5 +1,7 @@
 ﻿using System.Text;
 using System.Threading.Tasks;
+using Core.Aspects.Autofac.Logging;
+using Core.CrossCuttingConcerns.Logging.Serilog.Loggers;
 using Core.Utilities.Results;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -7,6 +9,7 @@ using RabbitMQ.Client;
 
 namespace Core.Utilities.MessageBrokers.RabbitMq
 {
+    [LogAspect(typeof(LogstashLogger))]
     public class RMqQueueHelper : IMessageBrokerHelper
     {
         private readonly MessageBrokerOptions _brokerOptions;
