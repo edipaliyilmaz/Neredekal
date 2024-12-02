@@ -53,7 +53,7 @@ namespace Business.Handlers.Reports.Commands
                 {
                     Id = reportId,
                     Status = ReportStatus.Preparing,
-                    CreateDate = DateTime.UtcNow,
+                    CreateDate = DateTime.Now,
                 };
 
                 var messageQueueResult = await _messageBrokerHelper.QueueMessageAsync(reportRequest, "Report");
