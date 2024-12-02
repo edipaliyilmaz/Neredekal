@@ -61,6 +61,24 @@ namespace WebAPI.Controllers
         /// <summary>
         /// Add Report.
         /// </summary>
+        /// <param name="requestReport"></param>
+        /// <returns></returns>
+        [Produces("application/json", "text/plain")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+        [HttpPost("RequestReport")]
+        public async Task<IActionResult> RequestReport([FromBody] RequestReportCommand requestReport)
+        {
+            var result = await Mediator.Send(requestReport);
+            if (result.Success)
+            {
+                return Ok(result.Message);
+            }
+            return BadRequest(result.Message);
+        }
+        /// <summary>
+        /// Add Report.
+        /// </summary>
         /// <param name="createReport"></param>
         /// <returns></returns>
         [Produces("application/json", "text/plain")]

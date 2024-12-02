@@ -13,6 +13,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using Business.Handlers.Reports.ValidationRules;
+using Business.Helpers;
+using Core.Enums;
+using System;
 
 namespace Business.Handlers.Reports.Commands
 {
@@ -21,13 +24,9 @@ namespace Business.Handlers.Reports.Commands
     /// </summary>
     public class CreateReportCommand : IRequest<IResult>
     {
-
-        public Core.Enums.ReportStatus Status { get; set; }
-        public System.DateTime CreatedDate { get; set; }
-        public string Location { get; set; }
-        public int HotelCount { get; set; }
-        public int PhoneCount { get; set; }
-
+        public ReportStatus Status { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public Guid Id { get; set; }
 
         public class CreateReportCommandHandler : IRequestHandler<CreateReportCommand, IResult>
         {
@@ -41,28 +40,26 @@ namespace Business.Handlers.Reports.Commands
 
             [ValidationAspect(typeof(CreateReportValidator), Priority = 1)]
             [CacheRemoveAspect("Get")]
-            [LogAspect(typeof(FileLogger))]
-            [SecuredOperation(Priority = 1)]
+            [LogAspect(typeof(LogstashLogger))]
             public async Task<IResult> Handle(CreateReportCommand request, CancellationToken cancellationToken)
             {
-                var isThereReportRecord = _reportRepository.Query().Any(u => u.Status == request.Status);
-
-                if (isThereReportRecord == true)
-                    return new ErrorResult(Messages.NameAlreadyExist);
-
-                var addedReport = new Report
+                try
                 {
-                    Status = request.Status,
-                    CreatedDate = request.CreatedDate,
-                    Location = request.Location,
-                    HotelCount = request.HotelCount,
-                    PhoneCount = request.PhoneCount,
+                    var addedReport = new Report
+                    {
+                        Id = request.Id,
+                        Status = request.Status,
+                        CreateDate = request.CreatedDate,
+                    };
 
-                };
-
-                _reportRepository.Add(addedReport);
-                await _reportRepository.SaveChangesAsync();
-                return new SuccessResult(Messages.Added);
+                    _reportRepository.Add(addedReport);
+                    await _reportRepository.SaveChangesAsync();
+                    return new SuccessResult(Messages.Added);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
             }
         }
     }
