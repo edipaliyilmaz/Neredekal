@@ -11,5 +11,7 @@ namespace Entities.Dtos
         public string Location { get; set; }
         public int HotelCount { get; set; }
         public int PhoneCount { get; set; }
+        public DateTime CreatedDate { get; set; }
+
     }
 }

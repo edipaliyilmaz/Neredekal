@@ -37,6 +37,44 @@ namespace WebAPI.Controllers
             }
             return BadRequest(result.Message);
         }
+        ///<summary>
+        ///List Hotels
+        ///</summary>
+        ///<remarks>Hotels</remarks>
+        ///<return>List Hotels Infos</return>
+        ///<response code="200"></response>
+        [Produces("application/json", "text/plain")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<HotelDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+        [HttpGet("gethotelsmanagers")]
+        public async Task<IActionResult> GetHotelsManagers()
+        {
+            var result = await Mediator.Send(new GetHotelsManagersQuery());
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+            return BadRequest(result.Message);
+        }
+        ///<summary>
+        ///List Hotels
+        ///</summary>
+        ///<remarks>Hotels</remarks>
+        ///<return>List Hotels Infos</return>
+        ///<response code="200"></response>
+        [Produces("application/json", "text/plain")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<HotelDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+        [HttpGet("gethotelsinfos")]
+        public async Task<IActionResult> GetHotelsInfos()
+        {
+            var result = await Mediator.Send(new GetHotelsInfosQuery());
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+            return BadRequest(result.Message);
+        }
 
         ///<summary>
         ///It brings the details according to its id.

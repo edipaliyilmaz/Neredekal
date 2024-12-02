@@ -1,10 +1,13 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Core.Aspects.Autofac.Logging;
+using Core.CrossCuttingConcerns.Logging.Serilog.Loggers;
+using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using System;
 using System.Text;
 
 namespace Core.Utilities.MessageBrokers.RabbitMq
 {
+    [LogAspect(typeof(LogstashLogger))]
     public class RabbitMQService : IRabbitMQService
     {
         private readonly IConnection _connection;
