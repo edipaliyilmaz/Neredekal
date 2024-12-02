@@ -1,6 +1,4 @@
-
 Proje Başlatma Dokümantasyonu
-
 Bu proje, Docker kullanarak PostgreSQL, PgAdmin, RabbitMQ, Elasticsearch ve Kibana servislerini çalıştırmanızı sağlar. Aşağıdaki adımları takip ederek projenizi başlatabilirsiniz.
 
 Gerekli Araçlar
@@ -17,8 +15,8 @@ Kibana: Elasticsearch ile entegre çalışan görselleştirme ve analiz aracı
 Adım 1: Docker ve Docker Compose Kurulumu
 Öncelikle Docker ve Docker Compose'un sisteminize kurulu olduğundan emin olun. Eğer kurulu değilse, aşağıdaki bağlantılardan kurulum yönergelerini takip edebilirsiniz:
 
-Docker: Docker Kurulum Rehberi
-Docker Compose: Docker Compose Kurulum Rehberi
+Docker Kurulum Rehberi
+Docker Compose Kurulum Rehberi
 Adım 2: Docker Compose Dosyasını Yapılandırma
 Projeye ait docker-compose.yml dosyasını oluşturun veya mevcut bir docker-compose.yml dosyasını aşağıdaki şekilde yapılandırın:
 
@@ -82,6 +80,7 @@ networks:
 volumes:
   postgres_data:
 Açıklamalar:
+
 PostgreSQL: youruser, yourpassword, yourdatabase kısmını kendi kullanıcı adı, şifreniz ve veritabanı adıyla değiştirin.
 PgAdmin: PgAdmin için varsayılan kullanıcı adı ve şifreyi değiştirebilirsiniz.
 RabbitMQ: RabbitMQ yönetim paneline http://localhost:15672 adresinden erişebilirsiniz.
@@ -114,10 +113,11 @@ Copy code
 docker-compose down
 Bu komut, konteynerleri durdurur ancak veritabanı ve diğer veri dosyaları kaybolmaz.
 
-Bu adımlar, PostgreSQL, PgAdmin, RabbitMQ, Elasticsearch ve Kibana'nın Docker üzerinde çalıştırılmasını sağlar ve uygulamanın başlangıç yapması için gerekli ortamı hazırlar.
-=======
-docker-compose.yml
+Alternatif Docker Compose Yapılandırması
+Aşağıda, Elasticsearch ve Kibana için alternatif bir yapılandırma bulunmaktadır:
 
+yaml
+Copy code
 version: '3.8'
 services:
   elasticsearch:
@@ -149,14 +149,14 @@ services:
       - 5601:5601
     volumes:
       - kibana-data:/usr/share/kibana/data
+
 networks:
   es-net:
     driver: bridge
+
 volumes:
   elasticsearch-data:
     driver: local
   kibana-data:
     driver: local
-
-
-
+Bu adımlar, PostgreSQL, PgAdmin, RabbitMQ, Elasticsearch ve Kibana'nın Docker üzerinde çalıştırılmasını sağlar ve uygulamanın başlangıç yapması için gerekli ortamı hazırlar.
