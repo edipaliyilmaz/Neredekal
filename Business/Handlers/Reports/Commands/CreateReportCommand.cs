@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using Business.Handlers.Reports.ValidationRules;
+using Business.Helpers;
 
 namespace Business.Handlers.Reports.Commands
 {
@@ -24,9 +25,7 @@ namespace Business.Handlers.Reports.Commands
 
         public Core.Enums.ReportStatus Status { get; set; }
         public System.DateTime CreatedDate { get; set; }
-        public string Location { get; set; }
-        public int HotelCount { get; set; }
-        public int PhoneCount { get; set; }
+
 
 
         public class CreateReportCommandHandler : IRequestHandler<CreateReportCommand, IResult>
@@ -41,23 +40,14 @@ namespace Business.Handlers.Reports.Commands
 
             [ValidationAspect(typeof(CreateReportValidator), Priority = 1)]
             [CacheRemoveAspect("Get")]
-            [LogAspect(typeof(FileLogger))]
-            [SecuredOperation(Priority = 1)]
+            [LogAspect(typeof(LogstashLogger))]
             public async Task<IResult> Handle(CreateReportCommand request, CancellationToken cancellationToken)
             {
-                var isThereReportRecord = _reportRepository.Query().Any(u => u.Status == request.Status);
-
-                if (isThereReportRecord == true)
-                    return new ErrorResult(Messages.NameAlreadyExist);
 
                 var addedReport = new Report
                 {
+                    Id = SequentialGuidGenerator.NewSequentialGuid(),  
                     Status = request.Status,
-                    CreatedDate = request.CreatedDate,
-                    Location = request.Location,
-                    HotelCount = request.HotelCount,
-                    PhoneCount = request.PhoneCount,
-
                 };
 
                 _reportRepository.Add(addedReport);

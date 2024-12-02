@@ -11,10 +11,6 @@ namespace Business.Handlers.Reports.ValidationRules
         {
             RuleFor(x => x.Status).NotEmpty();
             RuleFor(x => x.CreatedDate).NotEmpty();
-            RuleFor(x => x.Location).NotEmpty();
-            RuleFor(x => x.HotelCount).NotEmpty();
-            RuleFor(x => x.PhoneCount).NotEmpty();
-
         }
     }
     public class UpdateReportValidator : AbstractValidator<UpdateReportCommand>
@@ -23,10 +19,6 @@ namespace Business.Handlers.Reports.ValidationRules
         {
             RuleFor(x => x.Status).NotEmpty();
             RuleFor(x => x.CreatedDate).NotEmpty();
-            RuleFor(x => x.Location).NotEmpty();
-            RuleFor(x => x.HotelCount).NotEmpty();
-            RuleFor(x => x.PhoneCount).NotEmpty();
-
         }
     }
 }
