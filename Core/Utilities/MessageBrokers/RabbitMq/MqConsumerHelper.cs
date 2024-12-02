@@ -31,7 +31,7 @@ public class MqConsumerHelper : IMessageConsumer
             .CreateConnection();
         using var channel = connection.CreateModel();
         channel.QueueDeclare(
-            "DArchQueue",
+            "Report",
             false,
             false,
             false,
@@ -48,7 +48,7 @@ public class MqConsumerHelper : IMessageConsumer
         };
 
         channel.BasicConsume(
-            "DArchQueue",
+            "Report",
             true,
             consumer);
         Console.ReadKey();

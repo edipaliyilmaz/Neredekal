@@ -47,12 +47,7 @@ namespace Business.Handlers.Reports.Commands
             {
                 var isThereReportRecord = await _reportRepository.GetAsync(u => u.Id == request.Id);
 
-
                 isThereReportRecord.Status = request.Status;
-                isThereReportRecord.CreatedDate = request.CreatedDate;
-                isThereReportRecord.Location = request.Location;
-                isThereReportRecord.HotelCount = request.HotelCount;
-                isThereReportRecord.PhoneCount = request.PhoneCount;
 
 
                 _reportRepository.Update(isThereReportRecord);
