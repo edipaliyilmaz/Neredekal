@@ -1,5 +1,4 @@
-﻿
-using Business.Handlers.Hotels.Queries;
+﻿using Business.Handlers.Hotels.Queries;
 using DataAccess.Abstract;
 using Moq;
 using NUnit.Framework;
@@ -16,9 +15,9 @@ using Business.Constants;
 using static Business.Handlers.Hotels.Commands.UpdateHotelCommand;
 using static Business.Handlers.Hotels.Commands.DeleteHotelCommand;
 using MediatR;
-using System.Linq;
 using FluentAssertions;
-
+using System.Linq;
+using Entities.Dtos;
 
 namespace Tests.Business.HandlersTest
 {
@@ -27,6 +26,7 @@ namespace Tests.Business.HandlersTest
     {
         Mock<IHotelRepository> _hotelRepository;
         Mock<IMediator> _mediator;
+
         [SetUp]
         public void Setup()
         {
@@ -37,128 +37,142 @@ namespace Tests.Business.HandlersTest
         [Test]
         public async Task Hotel_GetQuery_Success()
         {
-            //Arrange
+            // Arrange
             var query = new GetHotelQuery();
 
-            _hotelRepository.Setup(x => x.GetAsync(It.IsAny<Expression<Func<Hotel, bool>>>())).ReturnsAsync(new Hotel()
-//propertyler buraya yazılacak
-//{																		
-//HotelId = 1,
-//HotelName = "Test"
-//}
-);
+            _hotelRepository.Setup(x => x.GetAsync(It.IsAny<Expression<Func<Hotel, bool>>>())).ReturnsAsync(new Hotel
+            {
+                Id = Guid.NewGuid(),
+                ManagerFirstName = "John",
+                ManagerLastName = "Doe",
+                CompanyName = "Test Hotel Inc.",
+                Contacts = new List<Contact>(),
+                CreateDate = DateTime.Now
+            });
 
             var handler = new GetHotelQueryHandler(_hotelRepository.Object, _mediator.Object);
 
-            //Act
-            var x = await handler.Handle(query, new System.Threading.CancellationToken());
+            // Act
+            var result = await handler.Handle(query, new System.Threading.CancellationToken());
 
-            //Asset
-            x.Success.Should().BeTrue();
-            //x.Data.HotelId.Should().Be(1);
-
+            // Assert
+            result.Success.Should().BeTrue();
+            result.Data.ManagerFirstName.Should().Be("John");
+            result.Data.CompanyName.Should().Be("Test Hotel Inc.");
         }
 
         [Test]
         public async Task Hotel_GetQueries_Success()
         {
-            //Arrange
+            // Arrange
             var query = new GetHotelsQuery();
 
             _hotelRepository.Setup(x => x.GetListAsync(It.IsAny<Expression<Func<Hotel, bool>>>()))
-                        .ReturnsAsync(new List<Hotel> { new Hotel() { /*TODO:propertyler buraya yazılacak HotelId = 1, HotelName = "test"*/ } });
+                        .ReturnsAsync(new List<Hotel>
+                        {
+                            new Hotel { Id = Guid.NewGuid(), ManagerFirstName = "John", ManagerLastName = "Doe", CompanyName = "Hotel 1", Contacts = new List<Contact>(), CreateDate = DateTime.Now },
+                            new Hotel { Id = Guid.NewGuid(), ManagerFirstName = "Jane", ManagerLastName = "Smith", CompanyName = "Hotel 2", Contacts = new List<Contact>(), CreateDate = DateTime.Now }
+                        });
 
             var handler = new GetHotelsQueryHandler(_hotelRepository.Object, _mediator.Object);
 
-            //Act
-            var x = await handler.Handle(query, new System.Threading.CancellationToken());
+            // Act
+            var result = await handler.Handle(query, new System.Threading.CancellationToken());
 
-            //Asset
-            x.Success.Should().BeTrue();
-            ((List<Hotel>)x.Data).Count.Should().BeGreaterThan(1);
-
+            // Assert
+            result.Success.Should().BeTrue();
+            ((List<Hotel>)result.Data).Count.Should().BeGreaterThan(1);
         }
 
         [Test]
         public async Task Hotel_CreateCommand_Success()
         {
-            Hotel rt = null;
-            //Arrange
-            var command = new CreateHotelCommand();
-            //propertyler buraya yazılacak
-            //command.HotelName = "deneme";
+            // Arrange
+            var command = new CreateHotelCommand
+            {
+                ManagerFirstName = "John",
+                ManagerLastName = "Doe",
+                CompanyName = "New Hotel",
+                Contacts = new List<ContactDto>()
+            };
 
             _hotelRepository.Setup(x => x.GetAsync(It.IsAny<Expression<Func<Hotel, bool>>>()))
-                        .ReturnsAsync(rt);
+                        .ReturnsAsync((Hotel)null);
 
             _hotelRepository.Setup(x => x.Add(It.IsAny<Hotel>())).Returns(new Hotel());
 
             var handler = new CreateHotelCommandHandler(_hotelRepository.Object, _mediator.Object);
-            var x = await handler.Handle(command, new System.Threading.CancellationToken());
+            var result = await handler.Handle(command, new System.Threading.CancellationToken());
 
             _hotelRepository.Verify(x => x.SaveChangesAsync());
-            x.Success.Should().BeTrue();
-            x.Message.Should().Be(Messages.Added);
+            result.Success.Should().BeTrue();
+            result.Message.Should().Be(Messages.Added);
         }
 
         [Test]
         public async Task Hotel_CreateCommand_NameAlreadyExist()
         {
-            //Arrange
-            var command = new CreateHotelCommand();
-            //propertyler buraya yazılacak 
-            //command.HotelName = "test";
+            // Arrange
+            var command = new CreateHotelCommand
+            {
+                CompanyName = "Existing Hotel"
+            };
 
             _hotelRepository.Setup(x => x.Query())
-                                           .Returns(new List<Hotel> { new Hotel() { /*TODO:propertyler buraya yazılacak HotelId = 1, HotelName = "test"*/ } }.AsQueryable());
-
-            _hotelRepository.Setup(x => x.Add(It.IsAny<Hotel>())).Returns(new Hotel());
+                .Returns(new List<Hotel> { new Hotel { Id = Guid.NewGuid(), CompanyName = "Existing Hotel", ManagerFirstName = "John", ManagerLastName = "Doe", Contacts = new List<Contact>(), CreateDate = DateTime.Now } }.AsQueryable());
 
             var handler = new CreateHotelCommandHandler(_hotelRepository.Object, _mediator.Object);
-            var x = await handler.Handle(command, new System.Threading.CancellationToken());
+            var result = await handler.Handle(command, new System.Threading.CancellationToken());
 
-            x.Success.Should().BeFalse();
-            x.Message.Should().Be(Messages.NameAlreadyExist);
+            result.Success.Should().BeFalse();
+            result.Message.Should().Be(Messages.NameAlreadyExist);
         }
 
         [Test]
         public async Task Hotel_UpdateCommand_Success()
         {
-            //Arrange
-            var command = new UpdateHotelCommand();
-            //command.HotelName = "test";
+            // Arrange
+            var command = new UpdateHotelCommand
+            {
+                Id = Guid.NewGuid(),
+                ManagerFirstName = "Updated",
+                ManagerLastName = "Manager",
+                CompanyName = "Updated Hotel"
+            };
 
             _hotelRepository.Setup(x => x.GetAsync(It.IsAny<Expression<Func<Hotel, bool>>>()))
-                        .ReturnsAsync(new Hotel() { /*TODO:propertyler buraya yazılacak HotelId = 1, HotelName = "deneme"*/ });
+                        .ReturnsAsync(new Hotel { Id = command.Id, ManagerFirstName = "Old", ManagerLastName = "Manager", CompanyName = "Old Hotel", Contacts = new List<Contact>(), CreateDate = DateTime.Now });
 
             _hotelRepository.Setup(x => x.Update(It.IsAny<Hotel>())).Returns(new Hotel());
 
             var handler = new UpdateHotelCommandHandler(_hotelRepository.Object, _mediator.Object);
-            var x = await handler.Handle(command, new System.Threading.CancellationToken());
+            var result = await handler.Handle(command, new System.Threading.CancellationToken());
 
             _hotelRepository.Verify(x => x.SaveChangesAsync());
-            x.Success.Should().BeTrue();
-            x.Message.Should().Be(Messages.Updated);
+            result.Success.Should().BeTrue();
+            result.Message.Should().Be(Messages.Updated);
         }
 
         [Test]
         public async Task Hotel_DeleteCommand_Success()
         {
-            //Arrange
-            var command = new DeleteHotelCommand();
+            // Arrange
+            var command = new DeleteHotelCommand
+            {
+                Id = Guid.NewGuid()
+            };
 
             _hotelRepository.Setup(x => x.GetAsync(It.IsAny<Expression<Func<Hotel, bool>>>()))
-                        .ReturnsAsync(new Hotel() { /*TODO:propertyler buraya yazılacak HotelId = 1, HotelName = "deneme"*/});
+                        .ReturnsAsync(new Hotel { Id = command.Id, ManagerFirstName = "Manager", ManagerLastName = "One", CompanyName = "Test Hotel", Contacts = new List<Contact>(), CreateDate = DateTime.Now });
 
             _hotelRepository.Setup(x => x.Delete(It.IsAny<Hotel>()));
 
             var handler = new DeleteHotelCommandHandler(_hotelRepository.Object, _mediator.Object);
-            var x = await handler.Handle(command, new System.Threading.CancellationToken());
+            var result = await handler.Handle(command, new System.Threading.CancellationToken());
 
             _hotelRepository.Verify(x => x.SaveChangesAsync());
-            x.Success.Should().BeTrue();
-            x.Message.Should().Be(Messages.Deleted);
+            result.Success.Should().BeTrue();
+            result.Message.Should().Be(Messages.Deleted);
         }
     }
 }
-
