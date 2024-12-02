@@ -53,34 +53,32 @@ namespace Business.Handlers.Reports.Commands
                 {
                     Id = reportId,
                     Status = ReportStatus.Preparing,
-                    CreateDate = DateTime.Now,
+                    CreateDate = DateTime.UtcNow, 
                 };
-                var result = await _messageBrokerHelper.QueueMessageAsync(reportRequest);
-                if (result.Success)
+
+                var messageQueueResult = await _messageBrokerHelper.QueueMessageAsync(reportRequest);
+                if (messageQueueResult.Success)
                 {
-                    var command = new CreateReportCommand
+                    var createReportCommand = new CreateReportCommand
                     {
-                        CreatedDate = reportRequest.CreateDate,
                         Id = reportRequest.Id,
-                        Status = reportRequest.Status
+                        Status = reportRequest.Status,
+                        CreatedDate = reportRequest.CreateDate,
                     };
-                    await _mediator.Send(command);
-                    Console.WriteLine("Message queued successfully.");
+
+                    await _mediator.Send(createReportCommand, cancellationToken);
+
+                    Console.WriteLine("Report message queued and command dispatched successfully.");
                 }
                 else
                 {
-                    Console.WriteLine($"Error: {result.Message}");
+                    Console.WriteLine($"Error queuing report message: {messageQueueResult.Message}");
+                    return new ErrorResult("QueueingFailed");
                 }
-                //var addedReport = new Report
-                //{
-                //    Id = SequentialGuidGenerator.NewSequentialGuid(),
-                //    Status = request.Status,
-                //};
 
-                //_reportRepository.Add(addedReport);
-                //await _reportRepository.SaveChangesAsync();
                 return new SuccessResult(Messages.Added);
             }
+
         }
     }
 }

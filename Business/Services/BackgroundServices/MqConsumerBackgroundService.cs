@@ -1,116 +1,103 @@
-﻿using Core.Utilities.MessageBrokers;
-using Microsoft.Extensions.Hosting;
-using RabbitMQ.Client.Events;
+﻿using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using DataAccess.Abstract;
 using Business.Handlers.Reports.Commands;
-using System.Text.Json;
-using Entities.Concrete;
+using Business.Handlers.Reports.Queries;
 using MediatR;
 using Core.Enums;
-using Entities.Dtos;
-using Business.Handlers.Reports.Queries;
-using Business.Handlers.Hotels.Queries;
-using Nest;
-using Serilog.Core;
-using Serilog;
+using Core.Utilities.MessageBrokers;
+using System.Collections.Generic;
 using Core.CrossCuttingConcerns.Logging.Serilog.Loggers;
 using Core.Aspects.Autofac.Logging;
+using DataAccess.Abstract;
+using Entities.Concrete;
+
 namespace Business.Services.BackgroundServices
 {
+    [LogAspect(typeof(LogstashLogger))]
     public class MqConsumerBackgroundService : BackgroundService
     {
-        private readonly IMessageConsumer _messageConsumer;
+        private readonly IMessageBrokerHelper _messageBrokerHelper;
         private readonly IReportRepository _reportRepository;
         private readonly IMediator _mediator;
-        private readonly IMessageBrokerHelper _messageBrokerHelper;
+        private readonly IRabbitMQService _rabbitMQService;
 
         public MqConsumerBackgroundService(
             IMessageBrokerHelper messageBrokerHelper,
-            IMessageConsumer messageConsumer,
             IReportRepository reportRepository,
-            IMediator mediator)
+            IMediator mediator,
+            IRabbitMQService rabbitMQService)
         {
-            _messageConsumer = messageConsumer;
+            _messageBrokerHelper = messageBrokerHelper;
             _reportRepository = reportRepository;
             _mediator = mediator;
-            _messageBrokerHelper = messageBrokerHelper;
+            _rabbitMQService = rabbitMQService;
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            return Task.Run(() => ConsumeMessagesAsync(), stoppingToken);
+            Task.Run(() => StartConsuming(stoppingToken), stoppingToken);
+            return Task.CompletedTask;
         }
-        private async Task ConsumeMessagesAsync()
-        {
-            var logger = new LogstashLogger();
 
+        private void StartConsuming(CancellationToken stoppingToken)
+        {
             try
             {
-                var result = await _messageConsumer.GetQueue();
-                if (result != null)
+                var channel = _rabbitMQService.CreateChannel(); 
+                var queueName = "Report";
+
+                _rabbitMQService.DeclareQueue(channel, queueName);
+
+                var consumer = new EventingBasicConsumer(channel);
+                Console.WriteLine("Message received: consumer");
+
+                consumer.Received += async (model, ea) =>
                 {
-                    var jsonResult = JsonSerializer.Deserialize<Report>(result);
-                    var report = await GenerateReport();
-                    if (report != null)
+                    try
                     {
-                        var command = new UpdateReportCommand
-                        {
-                            Status = ReportStatus.Completed,
-                            Id = jsonResult.Id,
-                        };
+                        var body = ea.Body.ToArray();
+                        var message = Encoding.UTF8.GetString(body);
 
-                        var brokerResult = await _messageBrokerHelper.QueueMessageAsync(report);
-                        if (brokerResult.Success)
-                        {
-                            await _mediator.Send(command);
-                            logger.Info("Rapor başarıyla kuyruğa gönderildi.");
+                        Console.WriteLine($"Message received: {message}");
 
-                        }
-                        else
+                        var report = JsonSerializer.Deserialize<Report>(message);
+                        if (report != null)
                         {
-                            logger.Error("Rapor kuyruğa gönderilirken bir hata oluştu.");
+                            var command = new UpdateReportCommand
+                            {
+                                Status = ReportStatus.Completed,
+                                Id = report.Id
+                            };
+
+                            var result = await _mediator.Send(command);
+                            Console.WriteLine($"Report processed: {result}");
                         }
+
+                        channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false); // Mesajı başarıyla aldık
                     }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error: {ex.Message}");
+                    }
+                };
+
+                channel.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
+
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    Thread.Sleep(1000); 
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine($"Error while consuming: {ex.Message}");
             }
-        }
-
-
-        public async Task<List<ReportItem>> GenerateReport()
-        {
-            var hotels = await _mediator.Send(new GetHotelsQuery { });
-
-            var report = hotels.Data.SelectMany
-                (h => h.Contacts
-                    .Where(c => c.Type == ContactType.Location)
-                    .Select(locationContact => new
-                    {
-                        Location = locationContact.Value,
-                        Hotel = h
-                    }))
-                .GroupBy(x => x.Location)
-                .Select(group => new ReportItem
-                {
-                    Location = group.Key,
-                    HotelCount = group.Count(),
-                    PhoneCount = group.SelectMany(x => x.Hotel.Contacts)
-                                             .Count(c => c.Type == ContactType.PhoneNumber)
-                })
-                .ToList();
-
-            return report;
         }
     }
 }

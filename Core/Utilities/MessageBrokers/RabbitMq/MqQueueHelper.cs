@@ -1,51 +1,42 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
 using Core.Utilities.Results;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 
-namespace Core.Utilities.MessageBrokers.RabbitMq;
-
-public class RMqQueueHelper : IMessageBrokerHelper
+namespace Core.Utilities.MessageBrokers.RabbitMq
 {
-    private readonly MessageBrokerOptions _brokerOptions;
-
-    public RMqQueueHelper(IConfiguration configuration)
+    public class RMqQueueHelper : IMessageBrokerHelper
     {
-        Configuration = configuration;
-        _brokerOptions = Configuration.GetSection("MessageBrokerOptions").Get<MessageBrokerOptions>();
-    }
+        private readonly MessageBrokerOptions _brokerOptions;
+        private readonly IRabbitMQService _rabbitMQService;
 
-    public IConfiguration Configuration { get; }
+        public RMqQueueHelper(IConfiguration configuration, IRabbitMQService rabbitMQService)
+        {
+            Configuration = configuration;
+            _brokerOptions = Configuration.GetSection("MessageBrokerOptions").Get<MessageBrokerOptions>();
+            _rabbitMQService = rabbitMQService;
+        }
 
-    public Task<IResult> QueueMessageAsync<T>(T messageModel)
-    {
-        using var connection = new ConnectionFactory()
-            {
-                HostName = _brokerOptions.HostName,
-                Port = _brokerOptions.Port,
-                UserName = _brokerOptions.UserName,
-                Password = _brokerOptions.Password,
-                AutomaticRecoveryEnabled = true,
-                NetworkRecoveryInterval = new TimeSpan(2000),
-            }
-            .CreateConnection();
-        using var channel = connection.CreateModel();
-        var topicName = typeof(T).Name;
-        channel.QueueDeclare(
-            topicName,
-            false,
-            false,
-            false,
-            null);
+        public IConfiguration Configuration { get; }
 
-        var message = JsonConvert.SerializeObject(messageModel);
-        var body = Encoding.UTF8.GetBytes(message);
+        public Task<IResult> QueueMessageAsync<T>(T messageModel)
+        {
+            var channel = _rabbitMQService.CreateChannel();
+            var queueName = "Report"; 
 
-        channel.BasicPublish(string.Empty, topicName, null, body);
-        return Task.FromResult<IResult>(new SuccessResult());
+            _rabbitMQService.DeclareQueue(channel, queueName);
 
+            var message = JsonConvert.SerializeObject(messageModel);
+            var body = Encoding.UTF8.GetBytes(message);
+
+            channel.BasicPublish(exchange: "",
+                                 routingKey: queueName,
+                                 basicProperties: null,
+                                 body: body);
+
+            return Task.FromResult<IResult>(new SuccessResult());
+        }
     }
 }

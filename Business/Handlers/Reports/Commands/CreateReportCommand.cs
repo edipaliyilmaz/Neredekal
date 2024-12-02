@@ -43,17 +43,23 @@ namespace Business.Handlers.Reports.Commands
             [LogAspect(typeof(LogstashLogger))]
             public async Task<IResult> Handle(CreateReportCommand request, CancellationToken cancellationToken)
             {
-
-                var addedReport = new Report
+                try
                 {
-                    Id = request.Id,
-                    Status = request.Status,
-                    CreateDate = request.CreatedDate,
-                };
+                    var addedReport = new Report
+                    {
+                        Id = request.Id,
+                        Status = request.Status,
+                        CreateDate = request.CreatedDate,
+                    };
 
-                _reportRepository.Add(addedReport);
-                await _reportRepository.SaveChangesAsync();
-                return new SuccessResult(Messages.Added);
+                    _reportRepository.Add(addedReport);
+                    await _reportRepository.SaveChangesAsync();
+                    return new SuccessResult(Messages.Added);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
             }
         }
     }

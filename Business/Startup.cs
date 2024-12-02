@@ -36,6 +36,7 @@ using Hangfire.PostgreSql;
 using Hangfire.RecurringJobExtensions;
 using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore.InMemory.Infrastructure.Internal;
+using Business.Services.BackgroundServices;
 
 namespace Business
 {
@@ -81,6 +82,8 @@ namespace Business
 
             services.AddTransient<IMessageBrokerHelper, RMqQueueHelper>();
             services.AddTransient<IMessageConsumer, MqConsumerHelper>();
+            services.AddHostedService<MqConsumerBackgroundService>();
+            services.AddSingleton<IRabbitMQService, RabbitMQService>();
 
             var taskSchedulerConfig = Configuration.GetSection("TaskSchedulerOptions").Get<TaskSchedulerConfig>();
 

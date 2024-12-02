@@ -7,6 +7,8 @@ using Business.Helpers;
 using Core.CrossCuttingConcerns.Logging.Serilog.Loggers;
 using Core.Extensions;
 using Core.Utilities.IoC;
+using Core.Utilities.MessageBrokers.RabbitMq;
+using Core.Utilities.MessageBrokers;
 using Core.Utilities.Security.Encyption;
 using Core.Utilities.Security.Jwt;
 using Core.Utilities.TaskScheduler.Hangfire.Models;
