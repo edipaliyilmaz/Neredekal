@@ -38,10 +38,10 @@ namespace WebAPI.Controllers
             return BadRequest(result.Message);
         }
         ///<summary>
-        ///List Hotels
+        ///List Managers
         ///</summary>
         ///<remarks>Hotels</remarks>
-        ///<return>List Hotels Infos</return>
+        ///<return>List Managers </return>
         ///<response code="200"></response>
         [Produces("application/json", "text/plain")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<HotelDto>))]
