@@ -19,9 +19,8 @@ Docker Kurulum Rehberi
 Docker Compose Kurulum Rehberi
 Adım 2: Docker Compose Dosyasını Yapılandırma
 Projeye ait docker-compose.yml dosyasını oluşturun veya mevcut bir docker-compose.yml dosyasını aşağıdaki şekilde yapılandırın:
-
+------------------------------------------
 yaml
-Copy code
 version: '3'
 services:
   postgres:
@@ -79,6 +78,7 @@ networks:
 
 volumes:
   postgres_data:
+  ------------------------------------------
 Açıklamalar:
 
 PostgreSQL: youruser, yourpassword, yourdatabase kısmını kendi kullanıcı adı, şifreniz ve veritabanı adıyla değiştirin.
@@ -88,14 +88,12 @@ Elasticsearch ve Kibana: Kibana'ya http://localhost:5601 adresinden erişebilirs
 Adım 3: Docker Compose ile Servisleri Başlatma
 docker-compose.yml dosyasının bulunduğu dizinde terminali açarak aşağıdaki komutu çalıştırın:
 
-bash
-Copy code
 docker-compose up -d
 Bu komut, tüm gerekli konteynerleri arka planda çalıştıracaktır. Konteynerlerin doğru bir şekilde çalıştığını kontrol etmek için aşağıdaki komutu kullanabilirsiniz:
 
-bash
-Copy code
 docker-compose ps
+
+
 Adım 4: Servislere Erişim
 PostgreSQL: PostgreSQL veritabanınıza localhost:5432 üzerinden erişebilirsiniz. Kullanıcı adı ve şifreyi docker-compose.yml dosyasındaki ayarlarla eşleştirin.
 PgAdmin: http://localhost adresinden PgAdmin web arayüzüne erişebilirsiniz. Giriş için e-posta adresi ve şifreyi docker-compose.yml dosyasındaki ayarlardan alın.
@@ -115,7 +113,7 @@ Bu komut, konteynerleri durdurur ancak veritabanı ve diğer veri dosyaları kay
 
 Alternatif Docker Compose Yapılandırması
 Aşağıda, Elasticsearch ve Kibana için alternatif bir yapılandırma bulunmaktadır:
-
+------------------------------------------
 yaml
 Copy code
 version: '3.8'
@@ -159,4 +157,5 @@ volumes:
     driver: local
   kibana-data:
     driver: local
+    ------------------------------------------
 Bu adımlar, PostgreSQL, PgAdmin, RabbitMQ, Elasticsearch ve Kibana'nın Docker üzerinde çalıştırılmasını sağlar ve uygulamanın başlangıç yapması için gerekli ortamı hazırlar.
