@@ -31,7 +31,7 @@ namespace Core.CrossCuttingConcerns.Logging.Serilog.Loggers
 .MinimumLevel.Information()
     .Enrich.FromLogContext()
     .WriteTo.Console()
-    .WriteTo.Elasticsearch(new[] { new Uri("http://localhost:9200") }, opts =>
+    .WriteTo.Elasticsearch(new[] { new Uri(logConfig.ConnectionString) }, opts =>
     {
         opts.DataStream = new DataStreamName("logs", "console-example", "neredekal");
         opts.BootstrapMethod = BootstrapMethod.Failure;
